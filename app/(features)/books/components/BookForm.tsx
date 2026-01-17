@@ -1,13 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { useBooks } from '../hooks/useBooks';
 import { BookCreate } from '../types/book.types';
 
-export default function BookForm() {
-  
-  // Get addBook function from our hook
-  const { addBook } = useBooks();
+type Props = {
+  addBook: (data: BookCreate) => Promise<void>;
+};
+
+export default function BookForm({addBook}: Props) {
   
   // State for form submission status
   const [isSubmitting, setIsSubmitting] = useState(false);

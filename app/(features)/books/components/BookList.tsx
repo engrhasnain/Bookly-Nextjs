@@ -2,13 +2,20 @@
 
 import { useBooks } from '../hooks/useBooks';
 import BookCard from './BookCard';
+import { Book } from '../types/book.types';
+
+type Props = {
+  books: Book[];
+  loading: boolean;
+  error: string | null;
+};
 
 // This component fetches and displays all books
-export default function BookList() {
+export default function BookList({ books, loading, error }: Props) {
   
   // Use our custom hook to get books data
   // Destructure the values we need
-  const { books, loading, error } = useBooks();
+  // const { books, loading, error } = useBooks();
 
   // LOADING STATE
   // Show while data is being fetched

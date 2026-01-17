@@ -1,66 +1,42 @@
-'use client'; // Next.js directive: this code runs in browser
+'use client';
 
-import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { bookApi } from '../api/bookApi';
-import { Book, BookCreate } from '../types/book.types';
+import { BookCreate } from '../types/book.types';
 
-// Custom hook for managing books data and operations
-// Hooks are functions that let you "hook into" React features
 export const useBooks = () => {
-  
-  // STATE: Data that can change over time
-  // useState returns [currentValue, functionToUpdateValue]
-  const [books, setBooks] = useState<Book[]>([]);           // Array of books
-  const [loading, setLoading] = useState(true);             // Is data loading?
-  const [error, setError] = useState<string | null>(null);  // Any errors?
+  const queryClient = useQueryClient();
 
-  // Function to fetch books from API
-  const fetchBooks = async () => {
-    try {
-      setLoading(true);              // Show loading state
-      const data = await bookApi.getAll(); // Fetch from API
-      setBooks(data);                // Update state with data
-      setError(null);                // Clear any previous errors
-    } catch (err) {
-      // If something goes wrong
-      setError('Failed to fetch books');
-      console.error('Error fetching books:', err);
-    } finally {
-      // Always runs, whether success or error
-      setLoading(false);             // Hide loading state
-    }
-  };
+  // ---------------------------
+  // FETCH ALL BOOKS
+  // ---------------------------
+  const {
+    data: books = [],
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ['books'],        // 🔑 cache key
+    queryFn: bookApi.getAll,    // API call
+  });
 
-  // EFFECT: Run side effects (like data fetching)
-  // useEffect runs after component renders
-  useEffect(() => {
-    fetchBooks(); // Fetch books when component mounts
-    
-    // Empty dependency array [] means "run once on mount"
-  }, []);
+  // ---------------------------
+  // CREATE BOOK
+  // ---------------------------
+  const createBookMutation = useMutation({
+    mutationFn: (data: BookCreate) => bookApi.create(data),
 
-  // Function to add a new book
-  const addBook = async (bookData: BookCreate) => {
-    try {
-      const newBook = await bookApi.create(bookData); // Create via API
-      
-      // Update local state immediately (optimistic update)
-      setBooks((prevBooks) => [...prevBooks, newBook]);
-      
-      return newBook; // Return for component to use
-    } catch (err) {
-      setError('Failed to create book');
-      throw err; // Re-throw so component can handle
-    }
-  };
+    onSuccess: () => {
+      // 🔥 Automatically refetch books after creation
+      queryClient.invalidateQueries({
+        queryKey: ['books'],
+      });
+    },
+  });
 
-  // Return everything the component needs
-  // Components using this hook get access to all these values/functions
   return {
-    books,      // Current list of books
-    loading,    // Is loading?
-    error,      // Any error message?
-    refetch: fetchBooks, // Function to refresh data
-    addBook,    // Function to add new book
+    books,
+    loading: isLoading,
+    error: isError ? 'Failed to fetch books' : null,
+    addBook: createBookMutation.mutateAsync,
   };
 };
