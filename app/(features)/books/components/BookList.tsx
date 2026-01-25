@@ -8,10 +8,11 @@ type Props = {
   books: Book[];
   loading: boolean;
   error: string | null;
+  onEdit: (book: Book) => void;
 };
 
 // This component fetches and displays all books
-export default function BookList({ books, loading, error }: Props) {
+export default function BookList({ books, loading, error, onEdit }: Props) {
   
   // Use our custom hook to get books data
   // Destructure the values we need
@@ -63,7 +64,7 @@ export default function BookList({ books, loading, error }: Props) {
       {/* Map over books array and render BookCard for each */}
       {books.map((book) => (
         // key prop helps React identify which items changed
-        <BookCard key={book.id} book={book} />
+        <BookCard key={book.id} book={book} onEdit={onEdit}/>
       ))}
     </div>
   );

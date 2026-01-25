@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import BookForm from './components/BookForm';
 import BookList from './components/BookList';
 import { useBooks } from './hooks/useBooks';
@@ -7,6 +8,17 @@ import { useBooks } from './hooks/useBooks';
 export default function BooksPage() {
   // ✅ ONE hook instance
   const booksState = useBooks();
+  
+  // ✅ Manage editing state
+  const [editingBook, setEditingBook] = useState(null);
+
+  const handleEdit = (book) => {
+    setEditingBook(book);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingBook(null);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -22,7 +34,12 @@ export default function BooksPage() {
         </div>
 
         {/* ✅ Pass state DOWN */}
-        <BookForm addBook={booksState.addBook} />
+        <BookForm 
+          addBook={booksState.addBook}
+          updateBook={booksState.updateBook}
+          editingBook={editingBook}
+          cancelEdit={handleCancelEdit}
+        />
 
         <div className="border-t border-gray-300 my-8"></div>
 
@@ -30,6 +47,7 @@ export default function BooksPage() {
           books={booksState.books}
           loading={booksState.loading}
           error={booksState.error}
+          onEdit={handleEdit}
         />
 
       </div>

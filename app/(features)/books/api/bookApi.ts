@@ -1,6 +1,6 @@
 import { apiClient } from '@/lib/api-client';
 import { API_CONFIG } from '@/config/api.config';
-import { Book, BookCreate, BooksListResponse } from '../types/book.types';
+import { Book, BookCreate, BooksListResponse, BookUpdate } from '../types/book.types';
 
 // This object contains all book-related API functions
 // Think of it as a "toolbox" for book operations
@@ -31,5 +31,13 @@ export const bookApi = {
   // You can add more methods here as your backend grows
   // getById: async (id: number) => { ... }
   // update: async (id: number, data: Partial<Book>) => { ... }
+  update: async (id: number, data: BookUpdate): Promise<Book> => {
+  const response = await apiClient.patch<Book>(
+    `${API_CONFIG.ENDPOINTS.BOOKS}/update_book/${id}`,
+    data
+    );
+    return response.data;
+    },
+
   // delete: async (id: number) => { ... }
 };

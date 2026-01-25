@@ -25,3 +25,11 @@ export interface BookCreate {
 // Response when fetching multiple books
 // Array of Book objects
 export type BooksListResponse = Book[];
+
+export type BookUpdate = {
+  title: string;
+  author: string;
+  price: number;
+  pages: number;
+  in_stock: boolean;
+};

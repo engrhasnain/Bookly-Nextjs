@@ -1,13 +1,17 @@
 'use client';
 
-import { useState } from 'react';
-import { BookCreate } from '../types/book.types';
+import { useState, useEffect } from 'react';
+import { BookCreate, Book, BookUpdate } from '../types/book.types';
 
 type Props = {
   addBook: (data: BookCreate) => Promise<void>;
+  updateBook: ({ id, data }: { id: number; data: BookUpdate }) => Promise<void>;
+  editingBook: Book | null;
+  cancelEdit: () => void;
 };
 
-export default function BookForm({addBook}: Props) {
+
+export default function BookForm({addBook, updateBook, editingBook, cancelEdit}: Props) {
   
   // State for form submission status
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -24,6 +28,13 @@ export default function BookForm({addBook}: Props) {
     published_year: new Date().getFullYear(),
     in_stock: true,
   });
+
+  // When editing a book, populate the form
+  useEffect(() => {
+    if (editingBook) {
+      setFormData(editingBook);
+    }
+  }, [editingBook]);
 
   // Handle input changes
   // This function updates state when user types
@@ -48,29 +59,45 @@ export default function BookForm({addBook}: Props) {
     try {
       setIsSubmitting(true);
       
-      // Call API to create book
-      await addBook(formData);
-      
-      // Show success message
-      setSuccessMessage('✅ Book added successfully!');
-      
-      // Reset form
-      setFormData({
-        id: 0,
-        title: '',
-        author: '',
-        price: 0,
-        pages: 0,
-        published_year: new Date().getFullYear(),
-        in_stock: true,
-      });
+      // Check if we're editing or adding
+      if (editingBook) {
+        console.log('Updating book with ID:', editingBook.id);
+        console.log('Editing book object:', editingBook);
+        console.log('Form data:', formData);
+        
+        if (!editingBook.id) {
+          alert('Error: Book ID is missing. Cannot update.');
+          setIsSubmitting(false);
+          return;
+        }
+        
+        // Update existing book
+        await updateBook({ id: editingBook.id, data: formData as BookUpdate });
+        setSuccessMessage('✅ Book updated successfully!');
+        cancelEdit();
+      } else {
+        // Create new book
+        await addBook(formData);
+        setSuccessMessage('✅ Book added successfully!');
+        
+        // Reset form
+        setFormData({
+          id: 0,
+          title: '',
+          author: '',
+          price: 0,
+          pages: 0,
+          published_year: new Date().getFullYear(),
+          in_stock: true,
+        });
+      }
       
       // Hide success message after 3 seconds
       setTimeout(() => setSuccessMessage(''), 3000);
       
     } catch (error) {
-      console.error('Failed to add book:', error);
-      alert('Failed to add book. Please try again.');
+      console.error('Failed to save book:', error);
+      alert('Failed to save book. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -78,7 +105,19 @@ export default function BookForm({addBook}: Props) {
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-      <h2 className="text-2xl font-bold mb-6 text-gray-800">Add New Book</h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-800">
+          {editingBook ? 'Edit Book' : 'Add New Book'}
+        </h2>
+        {editingBook && (
+          <button
+            onClick={cancelEdit}
+            className="text-gray-500 hover:text-gray-700 text-2xl"
+          >
+            ✕
+          </button>
+        )}
+      </div>
       
       {/* Success Message */}
       {successMessage && (
@@ -191,13 +230,24 @@ export default function BookForm({addBook}: Props) {
         </div>
 
         {/* Submit Button */}
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
-        >
-          {isSubmitting ? 'Adding Book...' : 'Add Book'}
-        </button>
+        <div className="flex gap-3">
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="flex-1 bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+          >
+            {isSubmitting ? (editingBook ? 'Updating...' : 'Adding...') : (editingBook ? 'Update Book' : 'Add Book')}
+          </button>
+          {editingBook && (
+            <button
+              type="button"
+              onClick={cancelEdit}
+              className="flex-1 bg-gray-400 text-white font-bold py-3 px-4 rounded-lg hover:bg-gray-500 transition-colors"
+            >
+              Cancel
+            </button>
+          )}
+        </div>
         
       </form>
     </div>

@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { bookApi } from '../api/bookApi';
-import { BookCreate } from '../types/book.types';
+import { BookCreate, BookUpdate } from '../types/book.types';
 
 export const useBooks = () => {
   const queryClient = useQueryClient();
@@ -32,11 +32,24 @@ export const useBooks = () => {
       });
     },
   });
+  
+  // ---------------------------
+  // UPDATE BOOK
+  // ---------------------------
+  const updateBookMutation = useMutation({
+  mutationFn: ({ id, data }: { id: number; data: BookUpdate }) =>
+  bookApi.update(id, data),
+
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ['books'] });
+  },
+});
 
   return {
     books,
     loading: isLoading,
     error: isError ? 'Failed to fetch books' : null,
     addBook: createBookMutation.mutateAsync,
+    updateBook: updateBookMutation.mutateAsync
   };
 };

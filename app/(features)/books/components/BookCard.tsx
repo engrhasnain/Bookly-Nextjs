@@ -3,14 +3,21 @@ import { Book } from '../types/book.types';
 // Props interface: defines what data this component receives
 interface BookCardProps {
   book: Book; // Single book object
+  onEdit: (book: Book) => void;
 }
 
 // Functional component: a function that returns JSX (HTML-like syntax)
-export default function BookCard({ book }: BookCardProps) {
+export default function BookCard({ book, onEdit }: BookCardProps) {
   return (
     // Tailwind classes for styling
     <div className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 p-6 border border-gray-200">
-      
+      <button
+  onClick={() => onEdit(book)}
+  className="text-blue-600 hover:text-blue-800"
+>
+  ✏️
+</button>
+
       {/* Book Title */}
       <h3 className="text-2xl font-bold text-gray-800 mb-2">
         {book.title}
@@ -35,13 +42,13 @@ export default function BookCard({ book }: BookCardProps) {
         {/* Pages */}
         <div className="flex justify-between items-center">
           <span className="text-gray-600">Pages:</span>
-          <span className="font-semibold">{book.pages}</span>
+          <span className="font-semibold text-black">{book.pages}</span>
         </div>
         
         {/* Published Year */}
         <div className="flex justify-between items-center">
           <span className="text-gray-600">Published:</span>
-          <span className="font-semibold">{book.published_year}</span>
+          <span className="font-semibold text-black">{book.published_year}</span>
         </div>
         
       </div>
